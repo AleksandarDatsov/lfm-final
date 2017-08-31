@@ -25,8 +25,9 @@ public class Checker extends JComponent {
 	private int[][] startPositionsBlack = { { 46, 10 }, { 46, 50 }, { 500, 10 }, { 500, 50 }, { 500, 90 }, { 500, 130 },
 			{ 500, 170 }, { 245, 467 }, { 245, 427 }, { 245, 387 }, { 245, 347 }, { 245, 307 }, { 340, 467 },
 			{ 340, 427 }, { 340, 387 } };
-	private int[] checkersYPositionsTop = { 10, 50, 90, 130, 170 };
-	private int[] checkersYPositionsBottom = { 467, 427, 387, 347, 307 };
+	private int[] checkersYPositionsTop = { 0, 10, 50, 90, 130, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, };
+	private int[] checkersYPositionsBottom = { 0, 467, 427, 387, 347, 307, 307, 307, 307, 307, 307, 307, 307, 307,
+			307 };
 	private static int[] fieldsCheckersCounter = { 2, 0, 0, 0, 0, 5, 0, 3, 0, 0, 0, 5, 5, 0, 0, 0, 3, 0, 5, 0, 0, 0, 0,
 			2 };
 	private int currentPosition = -1;
@@ -83,17 +84,17 @@ public class Checker extends JComponent {
 				} else {
 					this.currentPosition = i;
 				}
-				System.out.println("OldPosition " + oldPosition);
-				if(currentPosition!=-1){fieldsCheckersCounter[oldPosition]--;}
+				if (currentPosition != -1) {
+					fieldsCheckersCounter[oldPosition]--;
+				}
 				fieldsCheckersCounter[currentPosition]++;
-				System.out.println("\ncurrentPos" + this.currentPosition);
 				break;
 			}
 		}
-		System.out.println();
-		for (int iw = 0; iw < fieldsCheckersCounter.length; iw++) {
-			System.out.print(fieldsCheckersCounter[iw] + " ");
-		}
+		// System.out.println();
+		// for (int iw = 0; iw < fieldsCheckersCounter.length; iw++) {
+		// System.out.print(fieldsCheckersCounter[iw] + " ");
+		// }
 	}
 
 	private class MouseHandler extends MouseInputAdapter {
@@ -116,8 +117,11 @@ public class Checker extends JComponent {
 					}
 				}
 			}
-			setLocation(checkerPosibleXPositions[currentPosCopy][0] - 10, getY());
-
+			int y = checkersYPositionsTop[fieldsCheckersCounter[currentPosition]];
+			if (getY() > 250) {
+				y = checkersYPositionsBottom[fieldsCheckersCounter[currentPosition]];
+			}
+			setLocation(checkerPosibleXPositions[currentPosCopy][0] - 10, y);
 		};
 
 		@Override
