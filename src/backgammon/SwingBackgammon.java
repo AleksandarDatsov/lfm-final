@@ -63,7 +63,7 @@ public class SwingBackgammon {
 		frame.setLocationRelativeTo(null);
 		JPanel panel = new JPanel(null);
 		Controller controller = new Controller();
-
+	
 		for (int i = 0; i < 30; i++) {
 			panel.add(controller.getCheckers().get(i));
 		}
