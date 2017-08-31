@@ -16,16 +16,20 @@ public class Checker extends JComponent {
 	private Point pointPressed;
 	private JComponent draggable;
 	private final int[][] checkerPosibleXPositions = { { 55 }, { 95 }, { 133 }, { 173 }, { 214 }, { 254 }, { 310 },
-			{ 350 }, { 390 }, { 435 }, { 460 }, { 510 }, { 510 }, { 470 }, { 435 }, { 400 }, { 360 }, { 320 }, { 260 },
-			{ 220 }, { 180 }, { 140 }, { 100 }, { 60 } };
-	private final int[] checkerPosotionUp = { 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13 };
+			{ 350 }, { 390 }, { 435 }, { 470 }, { 510 }, { 510 }, { 470 }, { 435 }, { 390 }, { 350 }, { 310 }, { 254 },
+			{ 214 }, { 173 }, { 133 }, { 95 }, { 55 } };
+	private final int[] checkerPosotionUp = { 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12 };
 	private int[][] startPositionsWhite = { { 245, 10 }, { 245, 50 }, { 245, 90 }, { 245, 130 }, { 245, 170 },
 			{ 340, 10 }, { 340, 50 }, { 340, 90 }, { 500, 467 }, { 500, 427 }, { 500, 387 }, { 500, 347 }, { 500, 307 },
 			{ 46, 467 }, { 46, 427 } };
 	private int[][] startPositionsBlack = { { 46, 10 }, { 46, 50 }, { 500, 10 }, { 500, 50 }, { 500, 90 }, { 500, 130 },
 			{ 500, 170 }, { 245, 467 }, { 245, 427 }, { 245, 387 }, { 245, 347 }, { 245, 307 }, { 340, 467 },
 			{ 340, 427 }, { 340, 387 } };
-	private int currentPosition;
+	private int[] checkersYPositionsTop = { 10, 50, 90, 130, 170 };
+	private int[] checkersYPositionsBottom = { 467, 427, 387, 347, 307 };
+	private static int[] fieldsCheckersCounter = { 2, 0, 0, 0, 0, 5, 0, 3, 0, 0, 0, 5, 5, 0, 0, 0, 3, 0, 5, 0, 0, 0, 0,
+			2 };
+	private int currentPosition = -1;
 
 	public Checker(final String filePath, final int x, final int y) {
 		JLabel label = new JLabel();
@@ -71,17 +75,24 @@ public class Checker extends JComponent {
 	}
 
 	public void setCurrentPositionOnBoard(int x, int y) {
-
-		for (int i = 0; i < checkerPosibleXPositions.length; i++) {
+		int oldPosition = this.currentPosition;
+		for (int i = 0, j = checkerPosibleXPositions.length - 1; i < checkerPosibleXPositions.length; i++, j--) {
 			if (x >= checkerPosibleXPositions[i][0] && x <= checkerPosibleXPositions[i][0] + 20) {
 				if (y < 250) {
-					this.currentPosition = checkerPosotionUp[i];
+					this.currentPosition = j;
 				} else {
-					this.currentPosition = i + 1;
+					this.currentPosition = i;
 				}
-				System.out.println(this.currentPosition);
-				return;
+				System.out.println("OldPosition " + oldPosition);
+				if(currentPosition!=-1){fieldsCheckersCounter[oldPosition]--;}
+				fieldsCheckersCounter[currentPosition]++;
+				System.out.println("\ncurrentPos" + this.currentPosition);
+				break;
 			}
+		}
+		System.out.println();
+		for (int iw = 0; iw < fieldsCheckersCounter.length; iw++) {
+			System.out.print(fieldsCheckersCounter[iw] + " ");
 		}
 	}
 
@@ -91,12 +102,22 @@ public class Checker extends JComponent {
 			Point pointDragged = e.getPoint();
 			Point loc = getLocation();
 			loc.translate(pointDragged.x - pointPressed.x, pointDragged.y - pointPressed.y);
-			setCurrentPositionOnBoard(getX() + 20, getY() + 20);
+			setCurrentPositionOnBoard(getX() + 20, getY());
 			setLocation(loc);
 		}
 
 		public void mouseReleased(MouseEvent arg0) {
-			setLocation(checkerPosibleXPositions[currentPosition - 1][0] - 10, getY());
+			int currentPosCopy = currentPosition;
+			if (currentPosCopy > 11) {
+				for (int i = 0; i < checkerPosotionUp.length; i++) {
+					if (currentPosCopy == checkerPosotionUp[i]) {
+						currentPosCopy = i;
+						break;
+					}
+				}
+			}
+			setLocation(checkerPosibleXPositions[currentPosCopy][0] - 10, getY());
+
 		};
 
 		@Override
