@@ -56,18 +56,18 @@ public class SwingBackgammon {
 		frame = new JFrame();
 		frame.setBounds(200, 200, 544, 546);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
+		frame.setResizable(false);
 		frame = new JFrame("Draggable Components");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setSize(680, 562);
 		frame.setLocationRelativeTo(null);
 		JPanel panel = new JPanel(null);
-		Controller controller = new Controller();
-	
+		MouseHandler handler = new MouseHandler();
+		handler.distributeCheckers();
 		for (int i = 0; i < 30; i++) {
-			panel.add(controller.getCheckers().get(i));
-		}
+			panel.add(handler.getCheckers().get(i));
 
+		}
 		frame.getContentPane().add(panel);
 		JLabel label_1 = new JLabel();
 		label_1.setIcon(new ImageIcon(SwingBackgammon.class.getResource("/img/backgammon_board.jpg")));
