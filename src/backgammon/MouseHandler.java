@@ -1,6 +1,5 @@
 package backgammon;
 
-import java.awt.Color;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -74,7 +73,6 @@ public class MouseHandler extends MouseInputAdapter {
 		for (int i = 0; i < checkers.size(); i++) {
 			if (checkers.get(i).getCurrentPosition() == field) {
 				if (checkers.get(i).getColor().equalsIgnoreCase(color)) {
-					// checkers.get(i).setLocation(0, 0);
 					return checkers.get(i);
 				}
 			}
@@ -84,18 +82,14 @@ public class MouseHandler extends MouseInputAdapter {
 
 	private boolean isTheNextPositionHigher(Checker e) {
 		if (e.getColor().equalsIgnoreCase("black")) {
-			System.out.println("Black " + "current: " + e.getCurrentPosition() + "  old POsition: " + e.oldPosition);
-			System.out.println(!(e.getCurrentPosition() > e.oldPosition));
 			return !(e.getCurrentPosition() >= e.oldPosition);
 		}
-		System.out.println("White " + "oldPo: " + e.oldPosition + "  curr " + e.getCurrentPosition());
 		return e.getCurrentPosition() > e.oldPosition;
 	}
 
 	private void blackCheckerReleased(Checker e) {
 		if (fieldWhiteCheckersCounter[e.getCurrentPosition()] == 1) {
 			Checker white = findChecker(e.getCurrentPosition(), "white");
-			System.out.println("BlackReleased:  WHite checker was hit!!!");
 			fieldWhiteCheckersCounter[e.getCurrentPosition()]--;
 			fieldsCheckersCounter[e.getCurrentPosition()]--;
 			white.setLocation(0, 460);
@@ -106,7 +100,7 @@ public class MouseHandler extends MouseInputAdapter {
 		}
 		if (isWantedFieldAvailableForUse(e.getColor(), e.getCurrentPosition())) {
 			e.setLocation(checkerPosibleXPositions[e.getCurrentPosition()][0] - 10, y);
-			if (e.oldPosition != 25) {
+			if (e.oldPosition != 24) {
 				fieldsCheckersCounter[e.oldPosition]--;
 				fieldBlackCheckersCounter[e.oldPosition]--;
 			}
@@ -120,7 +114,6 @@ public class MouseHandler extends MouseInputAdapter {
 	private void whiteCheckerReleased(Checker e) {
 		if (fieldBlackCheckersCounter[e.getCurrentPosition()] == 1) {
 			Checker black = findChecker(e.getCurrentPosition(), "black");
-			System.out.println("WhiteReleased:  Black checker was hit!!!'");
 			fieldBlackCheckersCounter[e.getCurrentPosition()]--;
 			fieldsCheckersCounter[e.getCurrentPosition()]--;
 			black.setLocation(0, 10);
@@ -156,26 +149,43 @@ public class MouseHandler extends MouseInputAdapter {
 		return false;
 	}
 
-	void checkerMovements(Checker checker, MouseEvent event) {
+	private void checkerMovements(Checker checker, MouseEvent event) {
 		if (numbersToPlay.size() != 0) {
 			int currentPosition = checker.getCurrentPosition() - checker.oldPosition;
 			if (checker.getColor().equalsIgnoreCase("black")) {
-				currentPosition = (checker.oldPosition == 25) ? checker.oldPosition - checker.getCurrentPosition() + 1
-						: checker.oldPosition - checker.getCurrentPosition();
+				currentPosition = checker.oldPosition - checker.getCurrentPosition();
 			}
 			if (isTheNextPositionHigher(checker)) {
 				if (isThereSuchDiceNumber(currentPosition)) {
 					if (checker.getColor().equalsIgnoreCase("white")) {
 						if (isWantedFieldAvailableForUse("white", checker.getCurrentPosition())) {
-							whiteCheckerReleased(checker);
-							numbersToPlay.remove(numbersToPlay.indexOf(currentPosition));
+							if (areAllCheckersOnTheBoard(checker.getColor())) {
+								whiteCheckerReleased(checker);
+								numbersToPlay.remove(numbersToPlay.indexOf(currentPosition));
+							} else {
+								if (checker.oldPosition == -1) {
+									whiteCheckerReleased(checker);
+									numbersToPlay.remove(numbersToPlay.indexOf(currentPosition));
+								} else {
+									moveToOldPosition(checker, event);
+								}
+							}
 						} else {
 							moveToOldPosition(checker, event);
 						}
 					} else {
 						if (isWantedFieldAvailableForUse("black", checker.getCurrentPosition())) {
-							blackCheckerReleased(checker);
-							numbersToPlay.remove(numbersToPlay.indexOf(currentPosition));
+							if (areAllCheckersOnTheBoard(checker.getColor())) {
+								blackCheckerReleased(checker);
+								numbersToPlay.remove(numbersToPlay.indexOf(currentPosition));
+							} else {
+								if (checker.oldPosition == 24) {
+									blackCheckerReleased(checker);
+									numbersToPlay.remove(numbersToPlay.indexOf(currentPosition));
+								} else {
+									moveToOldPosition(checker, event);
+								}
+							}
 						} else {
 							moveToOldPosition(checker, event);
 						}
@@ -194,39 +204,49 @@ public class MouseHandler extends MouseInputAdapter {
 	public void mouseReleased(MouseEvent event) {
 		Checker checker = (Checker) event.getSource();
 		setCurrentPositionOnBoard(checker.getX() + 20, checker.getY(), event);
-		System.out.println(checker.oldPosition + "  old   new  " + checker.getCurrentPosition());
-		checkerMovements(checker, event);
-		updateFieldsCounters(checker);
+		if (!areAllCheckersGatheredInTheLastQuarter(checker.getColor())) {
+			checkerMovements(checker, event);
+		} else {
+			if (numbersToPlay.size() != 0) {
+				int currentPosition = checker.getCurrentPosition() - checker.oldPosition;
+				if (checker.getColor().equalsIgnoreCase("black")) {
+					currentPosition = checker.oldPosition - checker.getCurrentPosition();
+				}
+				if (checker.getColor().equalsIgnoreCase("white")) {
+				} else {
+
+				}
+			} else {
+				moveToOldPosition(checker, event);
+			}
+		}
 	};
 
 	private boolean isWantedFieldAvailableForUse(String checkerColor, int field) {
 		if (checkerColor.equalsIgnoreCase("black")) {
-			System.out.println("IswantedFieldavailabel Black:  "
-					+ (checkersTurnLabel.getText().equalsIgnoreCase("<html>Black's<br>Turn!</html>")));
 			return fieldWhiteCheckersCounter[field] < 2
 					&& checkersTurnLabel.getText().equalsIgnoreCase("<html>Black's<br>Turn!</html>");
 		}
 
-		System.out.println("IswantedFieldavailabel White:  " + (fieldBlackCheckersCounter[field] < 2
-				&& checkersTurnLabel.getText().equalsIgnoreCase("<html>White's<br>Turn!</html>")));
 		return fieldBlackCheckersCounter[field] < 2
 				&& checkersTurnLabel.getText().equalsIgnoreCase("<html>White's<br>Turn!</html>");
 	}
 
-	private void updateFieldsCounters(Checker checker) {
-		System.out.println("\nWhite");
-		for (int k = 0; k < fieldBlackCheckersCounter.length; k++) {
-			System.out.print(fieldWhiteCheckersCounter[k] + " ");
+	public boolean areAllCheckersOnTheBoard(String color) {
+		int arr[] = fieldBlackCheckersCounter;
+		if (color.equalsIgnoreCase("white")) {
+			arr = fieldWhiteCheckersCounter;
 		}
-		System.out.println("\nBlack");
-		for (int k = 0; k < fieldBlackCheckersCounter.length; k++) {
-			System.out.print(fieldBlackCheckersCounter[k] + " ");
+		int checkerCounter = 0;
+		for (int i = 0; i < arr.length; i++) {
+			if (arr[i] != 0) {
+				checkerCounter += arr[i];
+			}
 		}
-		System.out.println("\nCOUNTER");
-		for (int k = 0; k < fieldBlackCheckersCounter.length; k++) {
-			System.out.print(fieldsCheckersCounter[k] + " ");
+		if (checkerCounter < 15) {
+			return false;
 		}
-		System.out.println();
+		return true;
 	}
 
 	public void setCurrentPositionOnBoard(int x, int y, MouseEvent e) {
@@ -262,31 +282,26 @@ public class MouseHandler extends MouseInputAdapter {
 		Checker checker = (Checker) e.getSource();
 		checker.position = checker.getLocation();
 		if (isTheNextPositionHigher(checker)) {
-			System.out.println("IN   ::: " + checker.oldPosition);
 			checker.oldPosition = checker.getCurrentPosition();
-			System.out.println(checker.oldPosition + "    mousePressed");
 		}
 		if (checker.getLocation().getX() < 40) {
 			if (checker.getColor().equalsIgnoreCase("white")) {
 				checker.oldPosition = -1;
 				checker.setCurrentPosition(-1);
 			} else {
-				checker.oldPosition = 25;
-				checker.setCurrentPosition(25);
+				checker.oldPosition = 24;
+				checker.setCurrentPosition(24);
 			}
 		}
-		System.out.println(checker.oldPosition + "   mousePressed  " + checker.getCurrentPosition());
 	}
 
 	public ArrayList<Checker> getCheckers() {
-		System.out.println(checkers.size());
 		return checkers;
 	}
 
 	private void eraseArrayListElemets() {
 		while (numbersToPlay.size() != 0) {
 			numbersToPlay.remove(0);
-			System.out.println(1);
 		}
 	}
 
@@ -297,11 +312,21 @@ public class MouseHandler extends MouseInputAdapter {
 		checkersTurnLabel.setBounds(565, 370, 60, 40);
 	}
 
+	private boolean areAllCheckersGatheredInTheLastQuarter(String color) {
+		int sumBlack = fieldBlackCheckersCounter[0] + fieldBlackCheckersCounter[1] + fieldBlackCheckersCounter[2]
+				+ fieldBlackCheckersCounter[3] + fieldBlackCheckersCounter[4] + fieldBlackCheckersCounter[5];
+		int sumWhite = fieldWhiteCheckersCounter[23] + fieldWhiteCheckersCounter[22] + fieldWhiteCheckersCounter[21]
+				+ fieldWhiteCheckersCounter[20] + fieldWhiteCheckersCounter[19] + fieldWhiteCheckersCounter[18];
+		if (color.equalsIgnoreCase("white")) {
+			return sumWhite == 15;
+		}
+		return sumBlack == 15;
+	}
+
 	class ButtonAction implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			Random random = new Random();
-			System.out.println("BUTTON ACTION");
 			MouseHandler.firstDiceNumber = random.nextInt(6) + 1;
 			MouseHandler.secondDiceNumber = random.nextInt(6) + 1;
 			eraseArrayListElemets();
@@ -313,12 +338,9 @@ public class MouseHandler extends MouseInputAdapter {
 			numbersToPlay.add(firstDiceNumber);
 			numbersToPlay.add(secondDiceNumber);
 			if (firstDiceNumber == secondDiceNumber) {
-				System.out.println("CHIFT");
 				numbersToPlay.add(firstDiceNumber);
 				numbersToPlay.add(secondDiceNumber);
-				System.out.println("ARRAY SIZE :  " + numbersToPlay.size());
 			}
-			System.out.println(firstDiceNumber);
 			setDiceJpg(MouseHandler.this.firstDiceJpg, firstDiceNumber);
 			setDiceJpg(MouseHandler.this.secondDiceJpg, secondDiceNumber);
 		}
